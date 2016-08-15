@@ -39,3 +39,16 @@ func ServeError(w http.ResponseWriter, errRes ErrorResponse) {
 	w.WriteHeader(errRes.Status)
 	ServeJSON(w, errRes)
 }
+
+const (
+	StatusUnprocessableEntity = 422
+)
+
+// extentionStatusText supports extra status codes that the stdlib http package does not.
+var extentionStatusText = map[int]string{
+	StatusUnprocessableEntity: "Unprocessable entity",
+}
+
+func ExtentionStatusText(code int) string {
+	return extentionStatusText[code]
+}
