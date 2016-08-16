@@ -37,29 +37,34 @@ func (B *backend) GetRandomQuestion() (*Question, error) {
 		return nil, nil
 	}
 	var qid, prompt, answer, category, tags, date string
+	var score int
 	for rows.Next() {
-		err = rows.Scan(&qid, &prompt, &answer, &category, &tags, &date)
+		err = rows.Scan(&qid, &prompt, &answer, &category, &tags, &score, &date)
 		if err != nil {
 			fmt.Printf("error: could not scan from query (%+v)\n", err)
 			return nil, err
 		}
 	}
 	b := &Question{
+		QID:      qid,
 		Prompt:   prompt,
 		Answer:   answer,
 		Category: category,
+		Tags:     tags,
+		Date:     date,
+		Score:    score,
 	}
 	return b, nil
 }
 
 func (B *backend) AddQuestion(q Question) error {
-	cmd := "INSERT INTO Questions(prompt, answer, category, tags, created) values(?,?,?,?,?)"
+	cmd := "INSERT INTO Questions(prompt, answer, category, tags, score, created) values(?,?,?,?,?,CURRENT_DATE)"
 	query, err := B.db.Prepare(cmd)
 	if err != nil {
 		fmt.Printf("error: could not prepare sqlite3 query (%+v)\n", err)
 		return err
 	}
-	_, err = query.Exec(q.Prompt, q.Answer, q.Category, q.Tags, "CURRENT_DATE")
+	_, err = query.Exec(q.Prompt, q.Answer, q.Category, q.Tags, q.Score)
 	if err != nil {
 		fmt.Printf("error: could not execute sqlite3 query (%+v)\n", err)
 		return err

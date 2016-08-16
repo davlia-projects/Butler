@@ -6,4 +6,6 @@ type Question struct {
 	Prompt   string
 	Answer   string
 	Tags     string
+	Date     string
+	Score    int
 }
