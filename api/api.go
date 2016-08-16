@@ -34,9 +34,10 @@ func NewServer(conf config.Config, logic logic.Logic) *Server {
 	r.HandleFunc("/question", s.randomQuestion)
 
 	qr := r.PathPrefix("/question").Subrouter()
+
 	qr.HandleFunc("/random", s.randomQuestion)
 	qr.HandleFunc("/add", s.addQuestion)
-
+	qr.HandleFunc("/delete", s.deleteQuestion)
 	return s
 }
 
@@ -70,5 +71,8 @@ func (S *Server) addQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ServeJSON(w, "OK")
+}
+
+func (S *Server) deleteQuestion(w http.ResponseWriter, r *http.Request) {
 
 }

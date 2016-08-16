@@ -4,5 +4,6 @@ CREATE TABLE IF NOT EXISTS `Questions` (
   `answer` VARCHAR(2048) NULL,
   `category` VARCHAR(2048) NULL,
   `tags` VARCHAR(2048) NULL,
+  `score` INTEGER NULL,
   `created` DATE NULL
 );
