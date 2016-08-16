@@ -8,6 +8,7 @@ import (
 
 type Logic interface {
 	GetQuestion() (*Question, error)
+	AddQuestion(prompt, answer, category, tags string) error
 }
 type logic struct {
 	backend backend.Backend
@@ -28,4 +29,15 @@ func (L *logic) GetQuestion() (*Question, error) {
 		return nil, err
 	}
 	return question, nil
+}
+
+func (L *logic) AddQuestion(prompt, answer, category, tags string) error {
+	q := Question{
+		Prompt:   prompt,
+		Answer:   answer,
+		Category: category,
+		Tags:     tags,
+	}
+	err := L.backend.AddQuestion(q)
+	return err
 }

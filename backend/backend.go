@@ -11,6 +11,7 @@ import (
 
 type Backend interface {
 	GetRandomQuestion() (*Question, error)
+	AddQuestion(q Question) error
 }
 
 type backend struct {
@@ -19,7 +20,7 @@ type backend struct {
 }
 
 func NewBackend(conf config.Config) (Backend, error) {
-	db, err := sql.Open("sqlite3", "./questions.db")
+	db, err := sql.Open("sqlite3", "./db/dota_trivia_bot.db")
 	if err != nil {
 		fmt.Printf("error: could not open db connection (%+v)\n", err)
 	}
@@ -31,10 +32,13 @@ func NewBackend(conf config.Config) (Backend, error) {
 }
 
 func (B *backend) GetRandomQuestion() (*Question, error) {
-	rows, err := B.db.Query("SELECT * FROM table ORDER BY RANDOM() LIMIT 1")
-	var prompt, answer, category string
+	rows, err := B.db.Query("SELECT * FROM Questions ORDER BY RANDOM() LIMIT 1")
+	if rows == nil {
+		return nil, nil
+	}
+	var qid, prompt, answer, category, tags, date string
 	for rows.Next() {
-		err = rows.Scan(&prompt, &answer, &category)
+		err = rows.Scan(&qid, &prompt, &answer, &category, &tags, &date)
 		if err != nil {
 			fmt.Printf("error: could not scan from query (%+v)\n", err)
 			return nil, err
@@ -46,4 +50,19 @@ func (B *backend) GetRandomQuestion() (*Question, error) {
 		Category: category,
 	}
 	return b, nil
+}
+
+func (B *backend) AddQuestion(q Question) error {
+	cmd := "INSERT INTO Questions(prompt, answer, category, tags, created) values(?,?,?,?,?)"
+	query, err := B.db.Prepare(cmd)
+	if err != nil {
+		fmt.Printf("error: could not prepare sqlite3 query (%+v)\n", err)
+		return err
+	}
+	_, err = query.Exec(q.Prompt, q.Answer, q.Category, q.Tags, "CURRENT_DATE")
+	if err != nil {
+		fmt.Printf("error: could not execute sqlite3 query (%+v)\n", err)
+		return err
+	}
+	return nil
 }
